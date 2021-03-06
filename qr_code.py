@@ -6,21 +6,20 @@ import cv2
 from PIL import Image,ImageColor
 import numpy as np
  
-# construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", action='loadImage',
+# initialize parser and parse arguments
+ap = argparse.ArgumentParser(prog="skyscanner",
+	description="scan QR codes from samples or camera")
+
+ap.add_argument("-i", "--image", action="store",
 	help="path to input image")
-ap.add_argument("-c", "--camera",
+ap.add_argument("-c", "--camera", action="store_true",
 	help="scan QR code with camera")
 args = ap.parse_args()
 
-if not (args.process or args.upload):
-    parser.error('No action requested, add --image or --camera')
-
 # for loaded sample input images
-class loadImage(argparse.Action):
+if args.image:
 	# load the input image from samples
-	image = cv2.imread(args["image"])
+	image = cv2.imread(args.image)
 	
 	# find the barcodes in the image and decode each of the barcodes
 	barcodes = pyzbar.decode(image)
@@ -50,9 +49,9 @@ class loadImage(argparse.Action):
 	cv2.waitKey(0)
 
 # for camera scanned images
-class scanImage(argparse.Action):
+elif args.camera:
 
-	cv2.namedWindow("Python Qr-Code Detection")
+	cv2.namedWindow("UAS FPV Camera QR Code Scanner")
 	cap = cv2.VideoCapture(0)
 
 	scanner = zbar.ImageScanner()
@@ -80,7 +79,7 @@ class scanImage(argparse.Action):
 			cv2.line(im, topRightCorners, bottomRightCorners, (255,0,0),2)
 			cv2.line(im, bottomLeftCorners, bottomRightCorners, (255,0,0),2)
 
-			#2D image points. If you change the image, you need to change vector	
+			#2D image points	
 			image_points = np.array([
 								(int((topLeftCorners[0]+topRightCorners[0])/2), int((topLeftCorners[1]+bottomLeftCorners[1])/2)),     # Nose
 								topLeftCorners,     # Left eye left corner
@@ -89,7 +88,7 @@ class scanImage(argparse.Action):
 								bottomRightCorners      # Right mouth corner
 							], dtype="double")
 			
-			# 3D model points.
+			# 3D model points
 			model_points = np.array([
 								(0.0, 0.0, 0.0),             # Nose
 								(-225.0, 170.0, -135.0),     # Left eye left corner
@@ -116,7 +115,7 @@ class scanImage(argparse.Action):
 			print "Translation Vector:\n {0}".format(translation_vector)
 			
 			# Project a 3D point (0, 0, 1000.0) onto the image plane.
-			# We use this to draw a line sticking out of the nose
+			# draw a line sticking out of the nose
 			
 			(nose_end_point2D, jacobian) = cv2.projectPoints(np.array([(0.0, 0.0, 100.0)]), rotation_vector, translation_vector, camera_matrix, dist_coeffs)
 			
