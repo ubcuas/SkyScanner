@@ -52,7 +52,7 @@ if args.image:
 elif args.camera:
 
 	cv2.namedWindow("UAS FPV Camera QR Code Scanner")
-	cap = cv2.VideoCapture(0)
+	cap = cv2.VideoCapture(0)	#open cv video camera capture
 
 	scanner = zbar.ImageScanner()
 	scanner.parse_config('enable')
@@ -72,12 +72,8 @@ elif args.camera:
 		scanner.scan(image)
 
 		for symbol in image:
-			print 'decoded', symbol.type, 'symbol', '"%s"' % symbol.data
+			print ("DECODED: {}, DATA: {}".format(symbol.type, symbol.data))
 			topLeftCorners, bottomLeftCorners, bottomRightCorners, topRightCorners = [item for item in symbol.location]
-			cv2.line(im, topLeftCorners, topRightCorners, (255,0,0),2)
-			cv2.line(im, topLeftCorners, bottomLeftCorners, (255,0,0),2)
-			cv2.line(im, topRightCorners, bottomRightCorners, (255,0,0),2)
-			cv2.line(im, bottomLeftCorners, bottomRightCorners, (255,0,0),2)
 
 			#2D image points	
 			image_points = np.array([
@@ -106,15 +102,15 @@ elif args.camera:
 							[0, 0, 1]], dtype = "double"
 							)
 			
-			print "Camera Matrix :\n {0}".format(camera_matrix)
+			print ("Camera Matrix :\n {}".format(camera_matrix))
 			
-			dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
-			(success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs, flags=cv2.CV_ITERATIVE)
+			dist_coeffs = np.zeros((4,1)) # no lens distortion
+			(success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
 			
-			print "Rotation Vector:\n {0}".format(rotation_vector)
-			print "Translation Vector:\n {0}".format(translation_vector)
+			print ("Rotation Vector:\n {}".format(rotation_vector))
+			print ("Translation Vector:\n {}".format(translation_vector))
 			
-			# Project a 3D point (0, 0, 1000.0) onto the image plane.
+			# Project 3D point (0, 0, 1000.0) onto the image plane.
 			# draw a line sticking out of the nose
 			
 			(nose_end_point2D, jacobian) = cv2.projectPoints(np.array([(0.0, 0.0, 100.0)]), rotation_vector, translation_vector, camera_matrix, dist_coeffs)
@@ -125,18 +121,27 @@ elif args.camera:
 			p1 = ( int(image_points[0][0]), int(image_points[0][1]))
 			p2 = ( int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
 			
-			#pillars 
+			# frame
+			cv2.line(im, topLeftCorners, topRightCorners, (255,0,0),2)
+			cv2.line(im, topLeftCorners, bottomLeftCorners, (255,0,0),2)
+			cv2.line(im, topRightCorners, bottomRightCorners, (255,0,0),2)
+			cv2.line(im, bottomLeftCorners, bottomRightCorners, (255,0,0),2)
+
+			# diagonal
 			cv2.line(im, bottomLeftCorners, p2, (255,0,0), 2)
 			cv2.line(im, topLeftCorners, p2, (255,0,0), 2)
 			cv2.line(im, bottomRightCorners, p2, (255,0,0), 2)
 			cv2.line(im, topRightCorners, p2, (255,0,0), 2)
+
+			# text data
+			text = "{} ({})".format(symbol.data, symbol.type)
+			cv2.putText(im, text, (topLeftCorners[0], topLeftCorners[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+				0.5, (0, 0, 255), 2)
 			
-			# Display image
+		# Display image
 		cv2.imshow("Output", im)
 		
 		# Wait for the exit key
-		keypress = cv2.waitKey(1) & 0xFF
-		if keypress == ord('q'):
-			break
+		cv2.waitKey(1)
 
 	cv2.waitKey(0)
