@@ -78,19 +78,19 @@ elif args.camera:
 			#2D image points	
 			image_points = np.array([
 								(int((topLeftCorners[0]+topRightCorners[0])/2), int((topLeftCorners[1]+bottomLeftCorners[1])/2)),     # Nose
-								topLeftCorners,     # Left eye left corner
-								topRightCorners,     # Right eye right corne
-								bottomLeftCorners,     # Left Mouth corner
+								topLeftCorners,
+								topRightCorners,
+								bottomLeftCorners,
 								bottomRightCorners      # Right mouth corner
 							], dtype="double")
 			
 			# 3D model points
 			model_points = np.array([
-								(0.0, 0.0, 0.0),             # Nose
-								(-225.0, 170.0, -135.0),     # Left eye left corner
-								(225.0, 170.0, -135.0),      # Right eye right corne
-								(-150.0, -150.0, -125.0),    # Left Mouth corner
-								(150.0, -150.0, -125.0)      # Right mouth corner
+								(0.0, 0.0, 0.0),             # Center
+								(-225.0, 170.0, -135.0),     # Top Left
+								(225.0, 170.0, -135.0),      # Top Right
+								(-150.0, -150.0, -125.0),    # Bottom Left
+								(150.0, -150.0, -125.0)      # Bottom Right
 								])
 
 			# Camera internals
@@ -110,9 +110,7 @@ elif args.camera:
 			print ("Rotation Vector:\n {}".format(rotation_vector))
 			print ("Translation Vector:\n {}".format(translation_vector))
 			
-			# Project 3D point (0, 0, 1000.0) onto the image plane.
-			# draw a line sticking out of the nose
-			
+			# Project 3D point (0, 0, 1000.0) onto the image plane with line out of the nose
 			(nose_end_point2D, jacobian) = cv2.projectPoints(np.array([(0.0, 0.0, 100.0)]), rotation_vector, translation_vector, camera_matrix, dist_coeffs)
 			
 			for p in image_points:
