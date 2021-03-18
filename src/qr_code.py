@@ -44,7 +44,7 @@ def main():
 
 		# Display data in new window
 		app = wx.App(False)
-		frame = TextData(None, style = wx.TE_MULTILINE)
+		frame = TextData(None)
 
 		cap = cv2.VideoCapture(int(args.camera))	#open cv video camera capture
 
@@ -153,13 +153,11 @@ class TextData(wx.Frame):
 
 		panel = wx.Panel(self)
 		
-		self.box = wx.StaticBox(parent = panel, wx.ID_ANY, "QR CODE DATA")
-
 		self.SetSize((600,400))
 		self.SetTitle("QR Code Text Data")
 		self.Centre()
-		self.new_data = wx.TextCtrl(panel, pos = (38, 70), size = (600,400),
-			style = wx.TE_MULTILINE | wx.TE_READONLY)
+		self.new_data = wx.TextCtrl(self, id = -1, pos = wx.DefaultPosition,
+			size = (600,400), style = wx.TE_MULTILINE | wx.TE_READONLY)
 
 	def write_data(self, decoded):
 		if decoded not in set(TextData.data_list):
