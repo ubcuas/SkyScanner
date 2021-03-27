@@ -67,71 +67,77 @@ def main():
 
 			for symbol in image:
 				print ("DECODED: {}, DATA: {}".format(symbol.type, symbol.data))
-				topLeftCorners, bottomLeftCorners, bottomRightCorners, topRightCorners = [item for item in symbol.location]
 
-				#2D image points	
-				image_points = np.array([
-									(int((topLeftCorners[0]+topRightCorners[0])/2), int((topLeftCorners[1]+bottomLeftCorners[1])/2)),     # Nose
-									topLeftCorners,
-									topRightCorners,
-									bottomLeftCorners,
-									bottomRightCorners      # Right mouth corner
-								], dtype="double")
-				
-				# 3D model points
-				model_points = np.array([
-									(0.0, 0.0, 0.0),             # Center
-									(-225.0, 170.0, -135.0),     # Top Left
-									(225.0, 170.0, -135.0),      # Top Right
-									(-150.0, -150.0, -125.0),    # Bottom Left
-									(150.0, -150.0, -125.0)      # Bottom Right
-									])
+				try:
+					topLeftCorners, bottomLeftCorners, bottomRightCorners, topRightCorners = [item for item in symbol.location]
 
-				# Camera internals
-				focal_length = size[1]
-				center = (size[1]/2, size[0]/2)
-				camera_matrix = np.array(
-								[[focal_length, 0, center[0]],
-								[0, focal_length, center[1]],
-								[0, 0, 1]], dtype = "double"
-								)
-				
-				print ("Camera Matrix :\n {}".format(camera_matrix))
-				
-				dist_coeffs = np.zeros((4,1)) # no lens distortion
-				(success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
-				
-				print ("Rotation Vector:\n {}".format(rotation_vector))
-				print ("Translation Vector:\n {}".format(translation_vector))
-				
-				# Project 3D point (0, 0, 1000.0) onto the image plane with line out of the nose
-				(nose_end_point2D, jacobian) = cv2.projectPoints(np.array([(0.0, 0.0, 100.0)]), rotation_vector, translation_vector, camera_matrix, dist_coeffs)
-				
-				for p in image_points:
-					cv2.circle(im, (int(p[0]), int(p[1])), 3, (0,0,255), -1)
-				
-				p1 = ( int(image_points[0][0]), int(image_points[0][1]))
-				p2 = ( int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
-				
-				# frame
-				cv2.line(im, topLeftCorners, topRightCorners, (255,0,0),2)
-				cv2.line(im, topLeftCorners, bottomLeftCorners, (255,0,0),2)
-				cv2.line(im, topRightCorners, bottomRightCorners, (255,0,0),2)
-				cv2.line(im, bottomLeftCorners, bottomRightCorners, (255,0,0),2)
+					#2D image points	
+					image_points = np.array([
+										(int((topLeftCorners[0]+topRightCorners[0])/2), int((topLeftCorners[1]+bottomLeftCorners[1])/2)),     # Nose
+										topLeftCorners,
+										topRightCorners,
+										bottomLeftCorners,
+										bottomRightCorners      # Right mouth corner
+									], dtype="double")
+					
+					# 3D model points
+					model_points = np.array([
+										(0.0, 0.0, 0.0),             # Center
+										(-225.0, 170.0, -135.0),     # Top Left
+										(225.0, 170.0, -135.0),      # Top Right
+										(-150.0, -150.0, -125.0),    # Bottom Left
+										(150.0, -150.0, -125.0)      # Bottom Right
+										])
 
-				# diagonal
-				cv2.line(im, bottomLeftCorners, p2, (255,0,0), 2)
-				cv2.line(im, topLeftCorners, p2, (255,0,0), 2)
-				cv2.line(im, bottomRightCorners, p2, (255,0,0), 2)
-				cv2.line(im, topRightCorners, p2, (255,0,0), 2)
+					# Camera internals
+					focal_length = size[1]
+					center = (size[1]/2, size[0]/2)
+					camera_matrix = np.array(
+									[[focal_length, 0, center[0]],
+									[0, focal_length, center[1]],
+									[0, 0, 1]], dtype = "double"
+									)
+					
+					print ("Camera Matrix :\n {}".format(camera_matrix))
+					
+					dist_coeffs = np.zeros((4,1)) # no lens distortion
+					(success, rotation_vector, translation_vector) = cv2.solvePnP(model_points, image_points, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
+					
+					print ("Rotation Vector:\n {}".format(rotation_vector))
+					print ("Translation Vector:\n {}".format(translation_vector))
+					
+					# Project 3D point (0, 0, 1000.0) onto the image plane with line out of the nose
+					(nose_end_point2D, jacobian) = cv2.projectPoints(np.array([(0.0, 0.0, 100.0)]), rotation_vector, translation_vector, camera_matrix, dist_coeffs)
+					
+					for p in image_points:
+						cv2.circle(im, (int(p[0]), int(p[1])), 3, (0,0,255), -1)
+					
+					p1 = ( int(image_points[0][0]), int(image_points[0][1]))
+					p2 = ( int(nose_end_point2D[0][0][0]), int(nose_end_point2D[0][0][1]))
+					
+					# frame
+					cv2.line(im, topLeftCorners, topRightCorners, (255,0,0),2)
+					cv2.line(im, topLeftCorners, bottomLeftCorners, (255,0,0),2)
+					cv2.line(im, topRightCorners, bottomRightCorners, (255,0,0),2)
+					cv2.line(im, bottomLeftCorners, bottomRightCorners, (255,0,0),2)
 
-				# text data
-				text = "{} ({})".format(symbol.data, symbol.type)
-				cv2.putText(im, text, (topLeftCorners[0], topLeftCorners[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-					0.5, (0, 0, 255), 2)
+					# diagonal
+					cv2.line(im, bottomLeftCorners, p2, (255,0,0), 2)
+					cv2.line(im, topLeftCorners, p2, (255,0,0), 2)
+					cv2.line(im, bottomRightCorners, p2, (255,0,0), 2)
+					cv2.line(im, topRightCorners, p2, (255,0,0), 2)
 
-				# display data in new window
-				frame.write_data(text)
+					# text data
+					text = "{} ({})".format(symbol.data, symbol.type)
+					cv2.putText(im, text, (topLeftCorners[0], topLeftCorners[1] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+						0.5, (0, 0, 255), 2)
+
+					# display data in new window
+					frame.write_data(text)
+
+				except ValueError:
+					print("ValueError: need more than 1 value to unpack")
+					continue
 
 			# Display image
 			cv2.imshow("Camera Scan Index {}".format(args.camera), im)
