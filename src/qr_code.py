@@ -142,7 +142,7 @@ def main():
 
 		cv2.waitKey(0)
 
-    	app.MainLoop() 
+    	app.MainLoop()
 
 class TextData(wx.Frame):
 
@@ -163,7 +163,6 @@ class TextData(wx.Frame):
 		if decoded not in set(TextData.data_list):
 			self.new_data.AppendText(decoded + "\n\n")
 			TextData.data_list.append(decoded)
-
 
 if __name__ == '__main__': 
 	main() 
