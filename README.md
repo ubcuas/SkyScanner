@@ -16,11 +16,12 @@ General usage is as follows:
 ```
 python src/qr_code.py -i <img path>
 ```
--To scan live feed using a camera system:
+- To scan live feed using a camera system:
 ```
 python src/qr_code.py -c <device index>
 ```
 **Device Index**
+
 The device index indicates the order in which a device is plugged in
 - webcam - 0
 - fpv camera system - usually 1 or 2
