@@ -1,15 +1,27 @@
-## skyscanner<br>
-___
-A QR code image reader for UAS competition 
+# Skyscanner
+`Skyscanner` is a QR code image reader for UAS competition 
 
-- Support multiple QR codes in the same image 
+- Live feed QR code scanning using webcam FPV camera system
+- Sample images QR code scanning
+- Supports multiple QR code scanning
 
-
-**Required Packages**
-- OpenCV
+## Required Packages
+- opencv
 - pyzbar
+- numpy
 
-Code sample taken from [here](https://www.pyimagesearch.com/2018/05/21/an-opencv-barcode-and-qr-code-scanner-with-zbar/)
+## Usage
+General usage is as follows:
+- To scan sample images in /samples or other path:
+```
+python src/qr_code.py -i <img path>
+```
+- To scan live feed using a camera system:
+```
+python src/qr_code.py -c <device index>
+```
+**Device Index**
 
-Note: 
-- need to rewrite/update code for our needs
+The device index indicates the order in which a device is plugged in
+- webcam - 0
+- fpv camera system - usually 1 or 2
