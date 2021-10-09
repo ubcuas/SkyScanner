@@ -8,7 +8,6 @@
 ## Required Packages
 - opencv
 - pyzbar
-- numpy
 
 ## Usage
 General usage is as follows:
