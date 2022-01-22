@@ -13,15 +13,6 @@ import sys
 sys.path.insert(0, '../models')
 from scannerClient import scannerClient
 
-# Initialize Variables
-questionResponse = []
-dateResponse = "No date scanned"
-timeResponse = "No time scanned"
-deviceResponse = "No device scanned"
-sensorResponse = "No sensor scanned"
-coordLatResponse = "No coord scanned"
-coordLonResponse = "No coord scanned"
-
 # ---- Helper Functions ----
 
 # Helper function to read barcode data
