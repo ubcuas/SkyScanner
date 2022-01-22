@@ -8,6 +8,11 @@ import cv2
 
 from socketIO_client import SocketIO, BaseNamespace
 
+import sys
+# adding models to the system path
+sys.path.insert(0, '../models')
+from scannerClient import scannerClient
+
 # Initialize Variables
 questionResponse = []
 dateResponse = "No date scanned"
@@ -20,7 +25,7 @@ coordLonResponse = "No coord scanned"
 # ---- Helper Functions ----
 
 # Helper function to read barcode data
-def run_camera():
+def run_camera(responseData):
     barcodeDataLast = None
     cap = cv2.VideoCapture(int(0))
     status = True
@@ -49,29 +54,24 @@ def run_camera():
                     questionsList = splitQuestions[1].split('?')
                     for q in questionsList:
                         if (q != ''):
-                            global questionResponse
-                            questionResponse.append(q.strip())
+                            questions = []
+                            questions.append(q.strip())
+                    responseData.questionResponse = questions
                     dataList = splitQuestions[2].split(';')
-                    global dateResponse
-                    dateResponse = dataList[0].strip()
-                    global timeResponse
-                    timeResponse = dataList[1].strip()
-                    global deviceResponse
-                    deviceResponse = dataList[2].strip()
-                    global sensorResponse
-                    sensorResponse = dataList[3].strip()
+                    responseData.dateResponse = dataList[0].strip()
+                    responseData.timeResponse = dataList[1].strip()
+                    responseData.deviceResponse = dataList[2].strip()
+                    responseData.sensorResponse = dataList[3].strip()
                     coord = dataList[4].strip().split(',')
-                    global coordLatResponse
-                    coordLatResponse = coord[0].strip()
-                    global coordLonResponse
-                    coordLonResponse = coord[1].strip()
+                    responseData.coordLatResponse = coord[0].strip()
+                    responseData.coordLonResponse = coord[1].strip()
                 barcodeDataLast = barcodeData
 
         # Display image
         cv2.imshow("Camera Scan Index {}".format(0), im)
 
         if barcodeDataLast != None:
-            if (coordLatResponse != "No coord scanned"):
+            if (responseData.coordLatResponse != "No coord scanned"):
                 cv2.destroyAllWindows()
                 cv2.waitKey(1)
                 cap.release()
@@ -80,32 +80,35 @@ def run_camera():
 # Helper function that checks response from GCOM. If coordinates look correct, save scanned data to text file
 ## Note: For now, this text file is hardcoded as "USC_Data.txt"
 def checkStatus(*randomString):
+    global responseData
     if (randomString[0]['data'] == 200):
         print('Status: ',randomString[0]['data'])
         fileName = 'USC_Data.txt'
         file = open(fileName, 'w')
         count = 1
-        for q in questionResponse:
+        for q in responseData.questionResponse:
             file.write("Question #" + str(count) + " : " + q + "?" + "\n")
             count = count + 1
-        file.write("Date: " + dateResponse + "\n")
-        file.write("Time: " + timeResponse + "\n")
-        file.write("Device: " + deviceResponse + "\n")
-        file.write("Sensor: " + sensorResponse + "\n")
-        file.write("Coordinates: " + coordLatResponse + ", " + coordLonResponse)
+        file.write("Date: " + responseData.dateResponse + "\n")
+        file.write("Time: " + responseData.timeResponse + "\n")
+        file.write("Device: " + responseData.deviceResponse + "\n")
+        file.write("Sensor: " + responseData.sensorResponse + "\n")
+        file.write("Coordinates: " + responseData.coordLatResponse + ", " + responseData.coordLonResponse)
         file.close()
         print("Saved data to: " + fileName)
     else: 
         print("There has been a mistake! Please rescan the QR code")
-        run_camera()
-        chat.emit('camera_data_request', {'lat': float(coordLatResponse), 'lon': float(coordLonResponse)})
+        run_camera(responseData)
+        chat.emit('camera_data_request', {'lat': float(responseData.coordLatResponse), 'lon': float(responseData.coordLonResponse)})
         socket.wait(seconds = 1)
 
 # --- Main Function --- 
 
+responseData = scannerClient()
+
 # Call camera
 print("The camera is active, please scan the QR Code!")
-run_camera()
+run_camera(responseData)
 
 # Start socket connection 
 print("Starting socket")
@@ -118,5 +121,5 @@ chat.on('camera_data_response', checkStatus)
 
 # Send a request to GCOM 
 print("Sending data to GCOM...")
-chat.emit('camera_data_request', {'lat': float(coordLatResponse), 'lon': float(coordLonResponse)})
+chat.emit('camera_data_request', {'lat': float(responseData.coordLatResponse), 'lon': float(responseData.coordLonResponse)})
 socket.wait(seconds = 1)
