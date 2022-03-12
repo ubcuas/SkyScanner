@@ -53,9 +53,8 @@ def run_camera(responseData):
                     responseData.timeResponse = dataList[1].strip()
                     responseData.deviceResponse = dataList[2].strip()
                     responseData.sensorResponse = dataList[3].strip()
-                    coord = dataList[4].strip().split(',')
-                    responseData.coordLatResponse = coord[0].strip()
-                    responseData.coordLonResponse = coord[1].strip()
+                    responseData.coordLatResponse = dataList[4].strip()
+                    responseData.coordLonResponse = dataList[5].strip()
                 barcodeDataLast = barcodeData
 
         # Display image
