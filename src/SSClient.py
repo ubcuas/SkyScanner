@@ -1,3 +1,4 @@
+from scannerClient import scannerClient
 from os import times
 from flask import Flask, render_template, session, copy_current_request_context
 from flask_socketio import SocketIO, emit, disconnect, send
@@ -5,17 +6,19 @@ from threading import Lock
 from pyzbar.pyzbar import decode
 import argparse
 import cv2
+import requests
 
 from socketIO_client import SocketIO, BaseNamespace
 
 import sys
 # adding models to the system path
 sys.path.insert(0, '../models')
-from scannerClient import scannerClient
 
 # ---- Helper Functions ----
 
 # Helper function to read barcode data
+
+
 def run_camera(responseData):
     barcodeDataLast = None
     cap = cv2.VideoCapture(int(0))
@@ -25,7 +28,7 @@ def run_camera(responseData):
         ret, im = cap.read()
         if not ret:
             continue
-        
+
         # Read Image
         size = im.shape
         gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY, dstCn=0)
@@ -33,13 +36,14 @@ def run_camera(responseData):
 
         for barcode in image:
             (x, y, w, h) = barcode.rect
-            cv2.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)	# bounding box
-            barcodeData = barcode.data.decode("utf-8")	# convert to string
+            cv2.rectangle(im, (x, y), (x + w, y + h),
+                          (0, 0, 255), 2)  # bounding box
+            barcodeData = barcode.data.decode("utf-8")  # convert to string
             barcodeType = barcode.type
             if barcodeData != barcodeDataLast:
                 # JSON Stuff is printed here
                 # Need to make new function that makes a post command to GCOM instead of print
-                print ("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
+                print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
                 splitQuestions = barcodeData.split('\n')
                 if (len(splitQuestions) > 1):
                     questionsList = splitQuestions[1].split('?')
@@ -55,6 +59,23 @@ def run_camera(responseData):
                     responseData.sensorResponse = dataList[3].strip()
                     responseData.coordLatResponse = dataList[4].strip()
                     responseData.coordLonResponse = dataList[5].strip()
+
+                    try:
+                        generatedMission = {
+                            'wps': [
+                                {
+                                    'lat': float(responseData.coordLatResponse),
+                                    'lon': float(responseData.coordLonResponse),
+                                }
+                            ],
+                            'takeoffAlt': 60,
+                        }
+                        acomPOST = requests.post(
+                            'http://51.222.12.76:5000/aircraft/mission', json=generatedMission)
+                        print(acomPOST.text)
+                    except Exception as e:
+                        print(e)
+
                 barcodeDataLast = barcodeData
 
         # Display image
@@ -68,11 +89,13 @@ def run_camera(responseData):
                 status = False
 
 # Helper function that checks response from GCOM. If coordinates look correct, save scanned data to text file
-## Note: For now, this text file is hardcoded as "USC_Data.txt"
+# Note: For now, this text file is hardcoded as "USC_Data.txt"
+
+
 def checkStatus(*randomString):
     global responseData
     if (randomString[0]['data'] == 200):
-        print('Status: ',randomString[0]['data'])
+        print('Status: ', randomString[0]['data'])
         fileName = 'USC_Data.txt'
         file = open(fileName, 'w')
         count = 1
@@ -83,24 +106,26 @@ def checkStatus(*randomString):
         file.write("Time: " + responseData.timeResponse + "\n")
         file.write("Device: " + responseData.deviceResponse + "\n")
         file.write("Sensor: " + responseData.sensorResponse + "\n")
-        file.write("Coordinates: " + responseData.coordLatResponse + ", " + responseData.coordLonResponse)
+        file.write("Coordinates: " + responseData.coordLatResponse +
+                   ", " + responseData.coordLonResponse)
         file.close()
         print("Saved data to: " + fileName)
-    else: 
+    else:
         print("There has been a mistake! Please rescan the QR code")
         run_camera(responseData)
-        chat.emit('camera_data_request', {'lat': float(responseData.coordLatResponse), 'lon': float(responseData.coordLonResponse)})
-        socket.wait(seconds = 1)
+        chat.emit('camera_data_request', {'lat': float(
+            responseData.coordLatResponse), 'lon': float(responseData.coordLonResponse)})
+        socket.wait(seconds=1)
 
-# --- Main Function --- 
 
+# --- Main Function ---
 responseData = scannerClient()
 
 # Call camera
 print("The camera is active, please scan the QR Code!")
 run_camera(responseData)
 
-# Start socket connection 
+# Start socket connection
 print("Starting socket")
 socket = SocketIO('localhost', 3002)
 print("Opening NameSpace")
@@ -109,7 +134,8 @@ chat = socket.define(BaseNamespace, '/gcom')
 # Listen to response from GCOM Server
 chat.on('camera_data_response', checkStatus)
 
-# Send a request to GCOM 
+# Send a request to GCOM
 print("Sending data to GCOM...")
-chat.emit('camera_data_request', {'lat': float(responseData.coordLatResponse), 'lon': float(responseData.coordLonResponse)})
-socket.wait(seconds = 1)
+chat.emit('camera_data_request', {'lat': float(
+    responseData.coordLatResponse), 'lon': float(responseData.coordLonResponse)})
+socket.wait(seconds=1)

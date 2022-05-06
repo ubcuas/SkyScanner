@@ -18,18 +18,16 @@ def main():
 	if args.image:
 		image = cv2.imread(args.image)
 		barcodes = decode(image)		#detect and decode barcodes
-
-		for barcode in barcodes:
-			(x, y, w, h) = barcode.rect
-			cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)	# bounding box
-		
-			barcodeData = barcode.data.decode("utf-8")	# convert to string
-			barcodeType = barcode.type
-			text = "{} ({})".format(barcodeData, barcodeType)	# barcode data and barcode type on string img
-			cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
-				0.5, (0, 0, 255), 2)
-			print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
-
+		if barcodes is not None:
+			for barcode in barcodes:
+				(x, y, w, h) = barcode.rect
+				cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)	# bounding box
+				barcodeData = barcode.data.decode("utf-8")	# convert to string
+				barcodeType = barcode.type
+				text = "{} ({})".format(barcodeData, barcodeType)	# barcode data and barcode type on string img
+				cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
+					0.5, (0, 0, 255), 2)
+				print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
 		cv2.imshow("Image", image)
 		cv2.waitKey(0)
 
@@ -42,8 +40,8 @@ def main():
 		while True:
 			ret, im = cap.read()
 			if not ret:
-				continue 
-			
+				continue
+
 			# Read Image
 			size = im.shape
 			gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY, dstCn=0)
@@ -66,5 +64,5 @@ def main():
 
 		cv2.waitKey(0)
 
-if __name__ == '__main__': 
-	main() 
+if __name__ == '__main__':
+	main()
