@@ -8,10 +8,8 @@ import requests
 ap = argparse.ArgumentParser(
     prog="skyscanner", description="scan QR codes from samples or camera")
 
-ap.add_argument("-i", "--image", action="store",
-                help="scan sample images using path to input image")
-ap.add_argument("-c", "--camera", action="store",
-                help="scan live feed using camera device index")
+ap.add_argument("-i", "--image", action="store", help="scan sample images using path to input image")
+ap.add_argument("-c", "--camera", action="store", help="scan live feed using camera device index")
 args = ap.parse_args()
 
 
@@ -23,14 +21,12 @@ def main():
         if barcodes is not None:
             for barcode in barcodes:
                 (x, y, w, h) = barcode.rect
-                cv2.rectangle(image, (x, y), (x + w, y + h),
-                              (0, 0, 255), 2)  # bounding box
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)  # bounding box
                 barcodeData = barcode.data.decode("utf-8")  # convert to string
                 barcodeType = barcode.type
                 # barcode data and barcode type on string img
                 text = "{} ({})".format(barcodeData, barcodeType)
-                cv2.putText(image, text, (x, y - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
         cv2.imshow("Image", image)
         cv2.waitKey(0)
@@ -54,8 +50,7 @@ def main():
 
             for barcode in image:
                 (x, y, w, h) = barcode.rect
-                cv2.rectangle(im, (x, y), (x + w, y + h),
-                              (0, 0, 255), 2)  # bounding box
+                cv2.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)  # bounding box
                 barcodeData = barcode.data.decode("utf-8")  # convert to string
                 barcodeType = barcode.type
                 if barcodeData != barcodeDataLast:
@@ -63,7 +58,10 @@ def main():
                         barcodeType, barcodeData))
                     try:
                         targetPosition = list(
-                            map((lambda x: x.strip()), barcodeData.split(";")[-1].split(", ")))
+                            map((lambda x: x.strip()), barcodeData.split(";")))
+                        print(targetPosition)
+                        print(targetPosition[4])
+                        print(targetPosition[5])
 
                         #  get current aircraft position to set home location
                         homeGET = requests.get(
@@ -79,8 +77,8 @@ def main():
                             'wps': [
                                 {
                                     'alt': homePosition['alt']+80,
-                                    'lat': float(targetPosition[0]),
-                                    'lng': float(targetPosition[1]),
+                                    'lat': float(targetPosition[4]),
+                                    'lng': float(targetPosition[5]),
                                 }
                             ],
                             'takeoffAlt': homePosition['alt']+80,
