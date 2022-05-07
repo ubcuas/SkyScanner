@@ -5,11 +5,15 @@ import cv2
 import requests
 
 # initialize parser and parse arguments
-ap = argparse.ArgumentParser(prog="skyscanner", description="scan QR codes from samples or camera")
+ap = argparse.ArgumentParser(
+    prog="skyscanner", description="scan QR codes from samples or camera")
 
-ap.add_argument("-i", "--image", action="store", help="scan sample images using path to input image")
-ap.add_argument("-c", "--camera", action="store", help="scan live feed using camera device index")
+ap.add_argument("-i", "--image", action="store",
+                help="scan sample images using path to input image")
+ap.add_argument("-c", "--camera", action="store",
+                help="scan live feed using camera device index")
 args = ap.parse_args()
+
 
 def main():
     # for loaded sample input images
@@ -19,12 +23,14 @@ def main():
         if barcodes is not None:
             for barcode in barcodes:
                 (x, y, w, h) = barcode.rect
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)  # bounding box
+                cv2.rectangle(image, (x, y), (x + w, y + h),
+                              (0, 0, 255), 2)  # bounding box
                 barcodeData = barcode.data.decode("utf-8")  # convert to string
                 barcodeType = barcode.type
                 # barcode data and barcode type on string img
                 text = "{} ({})".format(barcodeData, barcodeType)
-                cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+                cv2.putText(image, text, (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
         cv2.imshow("Image", image)
         cv2.waitKey(0)
@@ -48,23 +54,35 @@ def main():
 
             for barcode in image:
                 (x, y, w, h) = barcode.rect
-                cv2.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)  # bounding box
+                cv2.rectangle(im, (x, y), (x + w, y + h),
+                              (0, 0, 255), 2)  # bounding box
                 barcodeData = barcode.data.decode("utf-8")  # convert to string
                 barcodeType = barcode.type
                 if barcodeData != barcodeDataLast:
-                    print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
-
+                    print("[INFO] Found {}:\n{}".format(
+                        barcodeType, barcodeData))
                     try:
-                        output = list(map((lambda x: x.strip()), barcodeData.split(";")[-1].split(", ")))
+                        targetPosition = list(
+                            map((lambda x: x.strip()), barcodeData.split(";")[-1].split(", ")))
+
+                        #  get current aircraft position to set home location
+                        homeGET = requests.get(
+                            "http://localhost:5000/aircraft/telemetry/gps")
+                        homePosition = homeGET.json()
+
                         generatedMission = {
                             'wps': [
                                 {
-                                    'lat': float(output[0]),
-                                    'lon': float(output[1]),
+                                    'lat': homePosition['lat'],
+                                    'lon': homePosition['lng'],
+                                },
+                                {
+                                    'lat': float(targetPosition[0]),
+                                    'lon': float(targetPosition[1]),
                                 }
                             ],
-                            'takeoffAlt': 60,
-							'rtl': False,
+                            'takeoffAlt': 80,
+                            'rtl': False,
                         }
                         acomPOST = requests.post(
                             'http://51.222.12.76:5000/aircraft/mission', json=generatedMission)
