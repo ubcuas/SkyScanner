@@ -1,5 +1,5 @@
 # Skyscanner
-`Skyscanner` is a QR code image reader for UAS competition 
+`Skyscanner` is a QR code image reader for UAS competition
 
 - Live feed QR code scanning using webcam FPV camera system
 - Sample images QR code scanning
@@ -7,7 +7,7 @@
 
 ## Required Packages
 - opencv
-- pyzbar
+- pyzbar :: install from https://pypi.org/project/pyzbar/
 
 ## Usage
 General usage is as follows:
