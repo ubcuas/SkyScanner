@@ -72,18 +72,18 @@ def main():
 
                         generatedMission = {
                             'homePos': {
-								'alt': homePosition['alt'],
-								'lat': homePosition['lat'],
+                                'alt': homePosition['alt'],
+                                'lat': homePosition['lat'],
                                 'lng': homePosition['lng'],
-							},
-							'wps': [
+                            },
+                            'wps': [
                                 {
-                                    'alt': 80,
-									'lat': float(targetPosition[0]),
+                                    'alt': homePosition['alt']+80,
+                                    'lat': float(targetPosition[0]),
                                     'lng': float(targetPosition[1]),
                                 }
                             ],
-                            'takeoffAlt': 80,
+                            'takeoffAlt': homePosition['alt']+80,
                             'rtl': False,
                         }
                         acomPOST = requests.post(
