@@ -60,22 +60,6 @@ def run_camera(responseData):
                     responseData.coordLatResponse = dataList[4].strip()
                     responseData.coordLonResponse = dataList[5].strip()
 
-                    try:
-                        generatedMission = {
-                            'wps': [
-                                {
-                                    'lat': float(responseData.coordLatResponse),
-                                    'lon': float(responseData.coordLonResponse),
-                                }
-                            ],
-                            'takeoffAlt': 60,
-                        }
-                        acomPOST = requests.post(
-                            'http://51.222.12.76:5000/aircraft/mission', json=generatedMission)
-                        print(acomPOST.text)
-                    except Exception as e:
-                        print(e)
-
                 barcodeDataLast = barcodeData
 
         # Display image
