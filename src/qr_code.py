@@ -67,18 +67,20 @@ def main():
 
                         #  get current aircraft position to set home location
                         homeGET = requests.get(
-                            "http://localhost:5000/aircraft/telemetry/gps")
+                            "http://51.222.12.76:5000/aircraft/telemetry/gps")
                         homePosition = homeGET.json()
 
                         generatedMission = {
-                            'wps': [
+                            'homePos': {
+								'alt': homePosition['alt'],
+								'lat': homePosition['lat'],
+                                'lng': homePosition['lng'],
+							},
+							'wps': [
                                 {
-                                    'lat': homePosition['lat'],
-                                    'lon': homePosition['lng'],
-                                },
-                                {
-                                    'lat': float(targetPosition[0]),
-                                    'lon': float(targetPosition[1]),
+                                    'alt': 80,
+									'lat': float(targetPosition[0]),
+                                    'lng': float(targetPosition[1]),
                                 }
                             ],
                             'takeoffAlt': 80,
