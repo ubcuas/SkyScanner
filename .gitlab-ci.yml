@@ -33,8 +33,8 @@ before_script:
 test:
   script:
     - pip install -r requirements.txt
-    - cd venv/lib/python3.10/site-packages/pyzbar/
-    - ls -a
+    - cd venv/lib/python3.10/site-packages
+    - ls -R -Hidden
     # - python src/qr_code.py -i .\samples\qr_code_blood.png
     # - python src/qr_code.py -i .\samples\qr_code_gitlab.png
     # - python src/qr_code.py -i .\samples\qr_code_uas.png
