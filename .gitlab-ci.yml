@@ -32,8 +32,8 @@ before_script:
 
 test 1/5:
   script:
-    # - pip install -r requirements.txt
-    - sudo apt-get install libzbar0
+    - pip install -r requirements.txt
+    - yum install zbar
     - python src/qr_code.py -i .\samples\qr_code_blood.png
     - python src/qr_code.py -i .\samples\qr_code_gitlab.png
     - python src/qr_code.py -i .\samples\qr_code_uas.png
