@@ -29,20 +29,13 @@ before_script:
   - pip install virtualenv
   - virtualenv venv
   - source venv/bin/activate
-  - pip install -r requirements.txt
 
 test 1/5:
   script:
+    # - pip install -r requirements.txt
+    - sudo apt-get install libzbar0
     - python src/qr_code.py -i .\samples\qr_code_blood.png
-test 2/5:
-  script:
     - python src/qr_code.py -i .\samples\qr_code_gitlab.png
-test 3/5:
-  script:
     - python src/qr_code.py -i .\samples\qr_code_uas.png
-test 4/5:
-  script:
     - python src/qr_code.py -i .\samples\qr_code_ubc.png
-test 5/5:
-  script:
     - python src/qr_code.py -i .\samples\qr_code_usc.png
