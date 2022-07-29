@@ -30,12 +30,12 @@ before_script:
   - virtualenv venv
   - source venv/bin/activate
 
-test 1/5:
+test:
   script:
     - pip install -r requirements.txt
-    - yum install zbar
-    - python src/qr_code.py -i .\samples\qr_code_blood.png
-    - python src/qr_code.py -i .\samples\qr_code_gitlab.png
-    - python src/qr_code.py -i .\samples\qr_code_uas.png
-    - python src/qr_code.py -i .\samples\qr_code_ubc.png
-    - python src/qr_code.py -i .\samples\qr_code_usc.png
+    - ls -a
+    # - python src/qr_code.py -i .\samples\qr_code_blood.png
+    # - python src/qr_code.py -i .\samples\qr_code_gitlab.png
+    # - python src/qr_code.py -i .\samples\qr_code_uas.png
+    # - python src/qr_code.py -i .\samples\qr_code_ubc.png
+    # - python src/qr_code.py -i .\samples\qr_code_usc.png
