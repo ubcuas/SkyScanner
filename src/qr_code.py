@@ -12,6 +12,8 @@ ap.add_argument("-i", "--image", action="store",
                 help="scan sample images using path to input image")
 ap.add_argument("-c", "--camera", action="store",
                 help="scan live feed using camera device index")
+ap.add_argument("-a", "--address", action="store", help="Return address for QR Code data")
+
 args = ap.parse_args()
 
 
@@ -62,34 +64,10 @@ def main():
                     print("[INFO] Found {}:\n{}".format(
                         barcodeType, barcodeData))
                     try:
-                        targetPosition = list(
-                            map((lambda x: x.strip()), barcodeData.split(";")))
-
-                        #  get current aircraft position to set home location
-                        homeGET = requests.get(
-                            "http://51.222.12.76:5000/aircraft/telemetry/gps")
-                        homePosition = homeGET.json()
-
-                        generatedMission = {
-                            'homePos': {
-                                'alt': homePosition['alt'],
-                                'lat': homePosition['lat'],
-                                'lng': homePosition['lng'],
-                            },
-                            'wps': [
-                                {
-                                    'alt': homePosition['alt']+80,
-                                    'lat': float(targetPosition[4]),
-                                    'lng': float(targetPosition[5]),
-                                }
-                            ],
-                            'takeoffAlt': homePosition['alt']+80,
-                            'rtl': False,
-                        }
                         acomPOST = requests.post(
-                            'http://51.222.12.76:5000/aircraft/mission', json=generatedMission)
+                            args.address, json={"data": barcodeData})
                         print(acomPOST.text)
-
+                        return
                     except Exception as e:
                         print(e)
 
