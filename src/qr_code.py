@@ -64,9 +64,9 @@ def main():
                     print("[INFO] Found {}:\n{}".format(
                         barcodeType, barcodeData))
                     try:
-                        acomPOST = requests.post(
+                        gcomPOST = requests.post(
                             args.address, json={"data": barcodeData})
-                        print(acomPOST.text)
+                        print(gcomPOST.text)
                         return
                     except Exception as e:
                         print(e)
