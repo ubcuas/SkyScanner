@@ -34,14 +34,16 @@ def main():
                 cv2.putText(image, text, (x, y - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
                 print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
-        cv2.imshow("Image", image)
-        cv2.waitKey(0)
+                sendToGCOM(barcodeData)
+        else:
+            print("[INFO] No QR Code found")
 
     # for camera scanned images
     elif args.camera:
 
         barcodeDataLast = None
         # open cv video camera capture
+        window = cv2.namedWindow("Camera Scan Index {}".format(args.camera))
         cap = cv2.VideoCapture(int(args.camera))
 
         while True:
@@ -63,24 +65,25 @@ def main():
                 if barcodeData != barcodeDataLast:
                     print("[INFO] Found {}:\n{}".format(
                         barcodeType, barcodeData))
-                    try:
-                        gcomPOST = requests.post(
-                            args.address, json={"data": barcodeData})
-                        print(gcomPOST.text)
-                        return
-                    except Exception as e:
-                        print(e)
-
+                    sendToGCOM(barcodeData)
                 barcodeDataLast = barcodeData
 
             # Display image
             cv2.imshow("Camera Scan Index {}".format(args.camera), im)
+            
+             # Check if window was closed
+            if cv2.waitKey(1) and cv2.getWindowProperty("Camera Scan Index {}".format(args.camera), cv2.WND_PROP_VISIBLE) != 1:
+                break
+        cv2.destroyAllWindows()
 
-            # Wait for the exit key
-            cv2.waitKey(1)
-
-        cv2.waitKey(0)
-
-
+def sendToGCOM(data):
+    try:
+        acomPOST = requests.post(
+            args.address, json={"data": data})
+        print(acomPOST.text)
+        return
+    except Exception as e:
+        print(e)
+    
 if __name__ == '__main__':
     main()
