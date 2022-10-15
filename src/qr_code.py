@@ -3,6 +3,7 @@ from pyzbar.pyzbar import decode
 import argparse
 import cv2
 import requests
+import json
 
 # initialize parser and parse arguments
 ap = argparse.ArgumentParser(
@@ -25,33 +26,14 @@ def main():
     elif args.camera:
         runCameraScanner()
 
-def sendToGCOM(data):
-    try:
-        acomPOST = requests.post(
-            args.address, json={"data": data})
-        print(acomPOST.text)
-        return
-    except Exception as e:
-        print(e)
-
 def scanImage():
     image = cv2.imread(args.image)
-    barcodes = decode(image)  # detect and decode barcodes
-    if barcodes is not None:
-        for barcode in barcodes:
-            (x, y, w, h) = barcode.rect
-            cv2.rectangle(image, (x, y), (x + w, y + h),
-                            (0, 0, 255), 2)  # bounding box
-            barcodeData = barcode.data.decode("utf-8")  # convert to string
-            barcodeType = barcode.type
-            # barcode data and barcode type on string img
-            text = "{} ({})".format(barcodeData, barcodeType)
-            cv2.putText(image, text, (x, y - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-            print("[INFO] Found {}:\n{}".format(barcodeType, barcodeData))
-            sendToGCOM(barcodeData)
+    barcodeDataset = decodeInput(image)
+    if len(barcodeDataset) > 0:
+        for barcodeData in barcodeDataset:
+            sendToGCOM(barcodeData, True)
     else:
-        print("[INFO] No QR Code found")
+        sendToGCOM(barcodeDataset, False)
 
 def runCameraScanner():
     barcodeDataLast = None
@@ -67,19 +49,10 @@ def runCameraScanner():
         # Read Image
         size = im.shape
         gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY, dstCn=0)
-        image = decode(gray)
 
-        for barcode in image:
-            (x, y, w, h) = barcode.rect
-            cv2.rectangle(im, (x, y), (x + w, y + h),
-                            (0, 0, 255), 2)  # bounding box
-            barcodeData = barcode.data.decode("utf-8")  # convert to string
-            barcodeType = barcode.type
-            if barcodeData != barcodeDataLast:
-                print("[INFO] Found {}:\n{}".format(
-                    barcodeType, barcodeData))
-                sendToGCOM(barcodeData)
-            barcodeDataLast = barcodeData
+        barcodeDataset = decodeInput(im)
+        for barcodeData in barcodeDataset:
+            sendToGCOM(barcodeData, True)
 
         # Display image
         cv2.imshow("Camera Scan Index {}".format(args.camera), im)
@@ -88,6 +61,24 @@ def runCameraScanner():
         if cv2.waitKey(1) and cv2.getWindowProperty("Camera Scan Index {}".format(args.camera), cv2.WND_PROP_VISIBLE) != 1:
             break
     cv2.destroyAllWindows()
+
+def decodeInput(image):
+    barcodeData = []
+    barcodes = decode(image)
+    for barcode in barcodes:
+        barcodeData.append(barcode.data.decode("utf-8"))  # convert to string
+    return barcodeData
+
+def sendToGCOM(data, found):
+    jsonData = json.dumps({"found": found, "data": data})
+    try:
+        acomPOST = requests.post(
+            args.address, json=jsonData)
+        print(acomPOST.text)
+        return
+    except Exception as e:
+        print(e)
+    print(jsonData)
 
 if __name__ == '__main__':
     main()
