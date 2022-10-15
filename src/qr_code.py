@@ -74,11 +74,9 @@ def sendToGCOM(data, found):
     try:
         acomPOST = requests.post(
             args.address, json=jsonData)
-        print(acomPOST.text)
         return
     except Exception as e:
         print(e)
-    print(jsonData)
 
 if __name__ == '__main__':
     main()
